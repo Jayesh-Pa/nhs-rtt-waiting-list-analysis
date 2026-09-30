@@ -1,0 +1,10 @@
+# Raw NHS files are large and publicly available: link to them instead of committing
+data/*.csv
+data/*.zip
+
+# Office / Power BI temp files
+~$*
+*.tmp
+
+# Private notes
+docs/INTERVIEW_NOTES.md
