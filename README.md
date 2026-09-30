@@ -8,34 +8,35 @@ loaded into MySQL, modelled as a star schema and analysed against two targets:
 the **65% interim ambition for March 2026** and the **92% constitutional standard**
 (patients waiting under 18 weeks).
 
-![% of patients waiting under 18 weeks](images/02_within_18_weeks.png)
+![18-week RTT performance, England](images/02_within_18_weeks.png)
 
 ---
 
 ## Key findings
 
-1. **The waiting list shrank, but slowly.** It fell from **7.42m** (April 2025) to
+1. **Waiting list decreased by 5.1%.** It fell from **7.42m** (April 2025) to
    **7.05m** (March 2026): 376,000 fewer patients (−5.1%). The biggest monthly
    falls came in November (−146k) and March (−111k).
-2. **The 65% interim ambition was met in the final month.** The share waiting under
+2. **The 65% interim ambition was met in March 2026.** The share waiting under
    18 weeks rose from **59.7% to 65.2%**, but it sat around 61–62% for most of the
    year and most of the gain came in February–March. England is still
    **26.8 points below the 92% standard**, about **1.89m patients short**.
-3. **Year-long waits halved, but the very longest didn't.** 52+ week waiters fell
+3. **52-week waits halved; 78-week waits increased.** 52+ week waiters fell
    from **192,560 to 95,824 (−50%)**, while 78+ week waiters *rose* from 2,055 to
-   2,335 (+14%). Progress on long waits hasn't reached the hardest cases.
-4. **Four specialties hold half the longest waits.** Trauma & Orthopaedics has the
+   2,335 (+14%), indicating that the longest-waiting patients have not benefited
+   from the overall improvement.
+4. **Four specialties account for half of 52-week waits.** Trauma & Orthopaedics has the
    largest list (**826k**) and **19.8%** of all 52+ week waiters. Together with ENT,
    Gynaecology and Oral Surgery it accounts for **50.8%**.
-5. **Where you live matters.** Across Integrated Care Boards, performance ranges from
+5. **Performance varies significantly by area.** Across Integrated Care Boards, performance ranges from
    **74.6%** (Gloucestershire) to **51.8%** (Mid and South Essex). Among large NHS
    trusts (20,000+ waiting), Moorfields Eye Hospital leads at **85.8%**, while
    Mid and South Essex NHS FT is lowest at **50.6%** and alone holds **12,150**
    year-long waiters (**12.7%** of England's total).
-6. **Raw league tables mislead.** The top of the provider rankings is dominated by
+6. **Independent-sector providers distort unadjusted league tables.** The top of the provider rankings is dominated by
    independent-sector providers (74.1% within 18 weeks vs 64.6% for NHS trusts),
-   but they hold only **6.3%** of the list and mostly simpler cases. Comparing
-   NHS trusts with each other gives a fairer picture.
+   but they hold only **6.3%** of the list and typically less complex, planned
+   cases. NHS trusts are therefore benchmarked separately.
 
 | | | |
 |---|---|---|
