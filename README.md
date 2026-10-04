@@ -46,11 +46,20 @@ the **65% interim ambition for March 2026** and the **92% constitutional standar
 
 ![Power BI dashboard](images/05_powerbi_dashboard.png)
 
-[`powerbi/nhs_rtt_dashboard.pbix`](powerbi/nhs_rtt_dashboard.pbix) is built on the three
-CSV exports from the SQL views. It shows the March 2026 headline KPIs, the monthly
-waiting list and 18-week trends (with the 65% interim ambition marked), 52+ week
-waits by specialty, and an 18-week league table of NHS trusts with 20,000+ patients
-waiting. Measures are documented in [docs/POWERBI_GUIDE.md](docs/POWERBI_GUIDE.md).
+[`powerbi/nhs_rtt_dashboard.pbix`](powerbi/nhs_rtt_dashboard.pbix) is built on the CSV
+exports from the SQL views, with a custom NHS theme ([`powerbi/nhs_theme.json`](powerbi/nhs_theme.json)).
+
+- **Slicers:** month, Integrated Care Board and provider type
+- **KPI cards:** patients waiting, % under 18 weeks, 52+ week waits and patients short of
+  the 92% standard, each with a DAX trend label (change vs April 2025, green/red
+  conditional formatting)
+- **Trends:** waiting list and 18-week performance with the 65% interim ambition marked
+- **Year-long waits by specialty** and an **NHS trust league table** (20,000+ waiting) with
+  data bars and a colour scale
+
+A disconnected date table drives the month slicer, so the KPIs follow the selected month
+while the trend charts keep the full year. Measures are documented in
+[docs/POWERBI_GUIDE.md](docs/POWERBI_GUIDE.md).
 
 ## Business questions
 
