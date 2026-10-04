@@ -1,99 +1,75 @@
-# Power BI: 3-page dashboard
+# Power BI dashboard
 
-Save as `powerbi/nhs_rtt_dashboard.pbix`. Estimated time: 2–3 hours.
+File: `powerbi/nhs_rtt_dashboard.pbix` (one page). Screenshot: `images/05_powerbi_dashboard.png`.
 
-The data is already prepared: the three CSVs in `exports/` come from the SQL views.
-`provider_month.csv` also has a `provider_type` column (NHS trust vs independent sector).
+## 1. Data
 
-## 1. Load the data
+Three queries, each loaded from `exports/` with **Get Data → Blank query → Advanced Editor**:
 
-**Get Data → Text/CSV** and load the three files from `exports/`:
-`monthly_england.csv`, `specialty_month.csv`, `provider_month.csv`.
+| Query | Source | Cleaning in Power Query |
+|---|---|---|
+| `Monthly` | `monthly_england.csv` | Typed columns (locale en-GB) |
+| `Specialty` | `specialty_month.csv` | Trailing " Service" removed; T&O and ENT renamed; column renamed `Specialty` |
+| `Provider` | `provider_month.csv` | Names in proper case (NHS kept upper case); ICB names shortened; columns renamed `Provider`, `ICB`, `Provider Type` |
 
-In Power Query, check that `month_start` is type **Date** and all counts are
-**Whole Number**. Rename the queries to `Monthly`, `Specialty`, `Provider`.
+Simplified example (Provider, before the renaming and name-cleaning steps):
 
-Create a date table (**Modeling → New table**):
-
-```DAX
-Calendar =
-ADDCOLUMNS (
-    CALENDAR ( DATE ( 2025, 4, 1 ), DATE ( 2026, 3, 31 ) ),
-    "Month", FORMAT ( [Date], "mmm yyyy" ),
-    "MonthSort", YEAR ( [Date] ) * 100 + MONTH ( [Date] )
-)
+```m
+let
+    Source = Csv.Document(File.Contents("...\exports\provider_month.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    Typed = Table.TransformColumnTypes(Promoted, {{"month_start", type date}, {"total_waiting", Int64.Type},
+        {"known_start", Int64.Type}, {"within_18_wks", Int64.Type}, {"over_52_wks", Int64.Type}}, "en-GB")
+in
+    Typed
 ```
 
-Sort `Month` by `MonthSort`. Relate `Calendar[Date]` to `month_start` in all three tables.
+The three tables are not related. Each measure picks the latest month in its own table,
+so the KPIs always show March 2026.
 
-## 2. Measures (create a blank table called `_Measures` to hold them)
+## 2. Measures (home table `Monthly`)
 
 ```DAX
-Total Waiting = SUM ( Provider[total_waiting] )
+Waiting List =
+VAR m = MAX ( Monthly[month_start] )
+RETURN CALCULATE ( SUM ( Monthly[total_waiting] ), Monthly[month_start] = m )
 
-Within 18 Weeks = SUM ( Provider[within_18_wks] )
+% Within 18 Weeks =
+VAR m = MAX ( Monthly[month_start] )
+RETURN DIVIDE (
+    CALCULATE ( SUM ( Monthly[within_18_wks] ), Monthly[month_start] = m ),
+    CALCULATE ( SUM ( Monthly[known_start] ),   Monthly[month_start] = m ) )
 
-Known Start = SUM ( Provider[known_start] )
+52+ Week Waiters =
+VAR m = MAX ( Monthly[month_start] )
+RETURN CALCULATE ( SUM ( Monthly[over_52_wks] ), Monthly[month_start] = m )
 
-% Within 18 Weeks = DIVIDE ( [Within 18 Weeks], [Known Start] )
+Specialty 52+ Week Waits =
+VAR m = CALCULATE ( MAX ( Specialty[month_start] ), ALL ( Specialty ) )
+RETURN CALCULATE ( SUM ( Specialty[over_52_wks] ), Specialty[month_start] = m )
 
-Gap to 92% = 0.92 - [% Within 18 Weeks]
+Trust Waiting / Trust % Within 18 Weeks / Trust 52+ Week Waiters
+    -- same latest-month pattern on the Provider table
 
-52+ Week Waiters = SUM ( Provider[over_52_wks] )
-
-Waiting Prev Month =
-CALCULATE ( [Total Waiting], DATEADD ( Calendar[Date], -1, MONTH ) )
-
-MoM Change = [Total Waiting] - [Waiting Prev Month]
-
-Latest Month Waiting =
-VAR LastDate = MAX ( Provider[month_start] )
-RETURN CALCULATE ( [Total Waiting], Provider[month_start] = LastDate )
+Patients Waiting      = FORMAT ( [Waiting List], "#,0" )       -- card labels, full numbers
+Waiting Over 52 Weeks = FORMAT ( [52+ Week Waiters], "#,0" )
 ```
 
-Format `% Within 18 Weeks` and `Gap to 92%` as percentages with 1 decimal place.
+Percentages are formatted `0.0%`. The file's format locale is English (United Kingdom).
 
-## 3. Page 1 — Overview
+## 3. Layout
 
-- Four **cards**: Total Waiting, % Within 18 Weeks, 52+ Week Waiters, MoM Change
-- **Line chart**: Total Waiting by Calendar[Month]
-- **Line chart**: % Within 18 Weeks by month, with a **constant line at 92%**
-  (Analytics pane → Constant line) labelled "Constitutional standard"
-- **Slicer**: Month
+| Visual | Fields | Notes |
+|---|---|---|
+| Card (3 values) | Patients Waiting, Waiting Over 52 Weeks, % Within 18 Weeks | Title = page title, subtitle = source |
+| Line chart | `Monthly[month_start]` × Waiting List | Raw date, not the date hierarchy |
+| Line chart | `Monthly[month_start]` × % Within 18 Weeks | Y-axis constant line at 65% ("Interim ambition 65%") |
+| Clustered bar | `Specialty[Specialty]` × Specialty 52+ Week Waits | Sorted descending |
+| Table | Provider, Trust Waiting, Trust % Within 18 Weeks, Trust 52+ Week Waiters | Filters: Provider Type = NHS trust, Trust Waiting ≥ 20,000; sorted by % descending |
 
-## 4. Page 2 — Specialties
+## 4. Numbers to check against (March 2026)
 
-- **Bar chart**: total waiting by `treatment_function_name` (latest month, sorted)
-- **Bar chart**: 52+ week waiters by specialty
-- **Matrix**: specialty × month, values = % within 18 weeks, with conditional
-  formatting (background colour scale, red under 92%)
-
-## 5. Page 3 — Hospital trusts
-
-- **Table**: provider_name, provider_parent_name, Total Waiting, % Within 18 Weeks,
-  52+ Week Waiters. Add a visual-level filter: Total Waiting ≥ 1,000.
-  Conditional formatting (icons or data bars) on % Within 18 Weeks.
-- **Bar chart**: % Within 18 Weeks by provider_parent_name
-- **Slicer**: provider_parent_name (ICB)
-- **Slicer**: provider_type, so viewers can compare NHS trusts only
-
-## 6. Polish
-
-- One colour theme (View → Themes), one accent colour for "bad vs target"
-- Title on every page and a short subtitle saying what the page answers
-- Text box footer: "Source: NHS England RTT Waiting Times, Apr 2025 – Mar 2026"
-
-## Numbers to sanity-check your dashboard against (March 2026)
-
-- Total waiting: 7,045,510
+- Patients waiting: 7,045,510
 - % within 18 weeks: 65.2%
 - 52+ week waiters: 95,824
-- Trauma & Orthopaedics waiting: 826,172
-
-If your cards show different numbers, check the relationships and the month filter.
-
-## 7. Screenshots for GitHub and LinkedIn
-
-Export each page (**File → Export → Export to PDF**, or Windows **Snipping Tool**)
-and save as `images/dashboard_overview.png`, `images/dashboard_specialties.png`,
-`images/dashboard_trusts.png`.
+- Top NHS trust (20,000+ waiting): Moorfields Eye Hospital, 85.8%
