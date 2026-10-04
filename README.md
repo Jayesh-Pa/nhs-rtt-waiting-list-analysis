@@ -42,6 +42,16 @@ the **65% interim ambition for March 2026** and the **92% constitutional standar
 |---|---|---|
 | ![](images/01_waiting_list_trend.png) | ![](images/03_52_week_waiters.png) | ![](images/04_long_waits_by_specialty.png) |
 
+## Power BI dashboard
+
+![Power BI dashboard](images/05_powerbi_dashboard.png)
+
+[`powerbi/nhs_rtt_dashboard.pbix`](powerbi/nhs_rtt_dashboard.pbix) is built on the three
+CSV exports from the SQL views. It shows the March 2026 headline KPIs, the monthly
+waiting list and 18-week trends (with the 65% interim ambition marked), 52+ week
+waits by specialty, and an 18-week league table of NHS trusts with 20,000+ patients
+waiting. Measures are documented in [docs/POWERBI_GUIDE.md](docs/POWERBI_GUIDE.md).
+
 ## Business questions
 
 1. How did the size of the waiting list change month by month?
